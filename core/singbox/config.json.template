@@ -4,70 +4,52 @@
   },
   "inbounds": [
     {
-      "type": "vless",
-      "tag": "vless-ws-in",
-      "listen": "127.0.0.1",
-      "listen_port": 11001,
-      "users": [{"uuid": "UUID_PLACEHOLDER"}],
-      "transport": {"type": "ws", "path": "PATH_PLACEHOLDER-s-vless-ws"}
+      "type": "vless", "tag": "vless-ws-in", "listen": "127.0.0.1", "listen_port": 11001,
+      "users": [{"uuid": "UUID_PLACEHOLDER"}], "transport": {"type": "ws", "path": "PATH_PLACEHOLDER-s-vless-ws"}
     },
     {
-      "type": "vless",
-      "tag": "vless-hu-in",
-      "listen": "127.0.0.1",
-      "listen_port": 11002,
-      "users": [{"uuid": "UUID_PLACEHOLDER"}],
-      "transport": {"type": "httpupgrade", "path": "PATH_PLACEHOLDER-s-vless-hu"}
+      "type": "vless", "tag": "vless-hu-in", "listen": "127.0.0.1", "listen_port": 11002,
+      "users": [{"uuid": "UUID_PLACEHOLDER"}], "transport": {"type": "httpupgrade", "path": "PATH_PLACEHOLDER-s-vless-hu"}
     },
     {
-      "type": "vmess",
-      "tag": "vmess-ws-in",
-      "listen": "127.0.0.1",
-      "listen_port": 11003,
-      "users": [{"uuid": "UUID_PLACEHOLDER", "alterId": 0}],
-      "transport": {"type": "ws", "path": "PATH_PLACEHOLDER-s-vmess-ws"}
+      "type": "vless", "tag": "vless-grpc-in", "listen": "127.0.0.1", "listen_port": 11003,
+      "users": [{"uuid": "UUID_PLACEHOLDER"}], "transport": {"type": "grpc", "service_name": "PATH_PLACEHOLDER-s-vless-grpc"}
     },
     {
-      "type": "vmess",
-      "tag": "vmess-hu-in",
-      "listen": "127.0.0.1",
-      "listen_port": 11004,
-      "users": [{"uuid": "UUID_PLACEHOLDER", "alterId": 0}],
-      "transport": {"type": "httpupgrade", "path": "PATH_PLACEHOLDER-s-vmess-hu"}
+      "type": "vmess", "tag": "vmess-ws-in", "listen": "127.0.0.1", "listen_port": 11004,
+      "users": [{"uuid": "UUID_PLACEHOLDER", "alterId": 0}], "transport": {"type": "ws", "path": "PATH_PLACEHOLDER-s-vmess-ws"}
     },
     {
-      "type": "trojan",
-      "tag": "trojan-ws-in",
-      "listen": "127.0.0.1",
-      "listen_port": 11005,
-      "users": [{"password": "PASS_PLACEHOLDER"}],
-      "transport": {"type": "ws", "path": "PATH_PLACEHOLDER-s-trojan-ws"}
+      "type": "vmess", "tag": "vmess-hu-in", "listen": "127.0.0.1", "listen_port": 11005,
+      "users": [{"uuid": "UUID_PLACEHOLDER", "alterId": 0}], "transport": {"type": "httpupgrade", "path": "PATH_PLACEHOLDER-s-vmess-hu"}
     },
     {
-      "type": "trojan",
-      "tag": "trojan-hu-in",
-      "listen": "127.0.0.1",
-      "listen_port": 11006,
-      "users": [{"password": "PASS_PLACEHOLDER"}],
-      "transport": {"type": "httpupgrade", "path": "PATH_PLACEHOLDER-s-trojan-hu"}
+      "type": "vmess", "tag": "vmess-grpc-in", "listen": "127.0.0.1", "listen_port": 11006,
+      "users": [{"uuid": "UUID_PLACEHOLDER", "alterId": 0}], "transport": {"type": "grpc", "service_name": "PATH_PLACEHOLDER-s-vmess-grpc"}
     },
     {
-      "type": "shadowsocks",
-      "tag": "ss-ws-in",
-      "listen": "127.0.0.1",
-      "listen_port": 11007,
-      "method": "aes-256-gcm",
-      "password": "PASS_PLACEHOLDER",
-      "transport": {"type": "ws", "path": "PATH_PLACEHOLDER-s-ss-ws"}
+      "type": "trojan", "tag": "trojan-ws-in", "listen": "127.0.0.1", "listen_port": 11007,
+      "users": [{"password": "PASS_PLACEHOLDER"}], "transport": {"type": "ws", "path": "PATH_PLACEHOLDER-s-trojan-ws"}
     },
     {
-      "type": "shadowsocks",
-      "tag": "ss-hu-in",
-      "listen": "127.0.0.1",
-      "listen_port": 11008,
-      "method": "aes-256-gcm",
-      "password": "PASS_PLACEHOLDER",
-      "transport": {"type": "httpupgrade", "path": "PATH_PLACEHOLDER-s-ss-hu"}
+      "type": "trojan", "tag": "trojan-hu-in", "listen": "127.0.0.1", "listen_port": 11008,
+      "users": [{"password": "PASS_PLACEHOLDER"}], "transport": {"type": "httpupgrade", "path": "PATH_PLACEHOLDER-s-trojan-hu"}
+    },
+    {
+      "type": "trojan", "tag": "trojan-grpc-in", "listen": "127.0.0.1", "listen_port": 11009,
+      "users": [{"password": "PASS_PLACEHOLDER"}], "transport": {"type": "grpc", "service_name": "PATH_PLACEHOLDER-s-trojan-grpc"}
+    },
+    {
+      "type": "shadowsocks", "tag": "ss-ws-in", "listen": "127.0.0.1", "listen_port": 11010,
+      "method": "SS_METHOD_PLACEHOLDER", "password": "PASS_PLACEHOLDER", "transport": {"type": "ws", "path": "PATH_PLACEHOLDER-s-ss-ws"}
+    },
+    {
+      "type": "shadowsocks", "tag": "ss-hu-in", "listen": "127.0.0.1", "listen_port": 11011,
+      "method": "SS_METHOD_PLACEHOLDER", "password": "PASS_PLACEHOLDER", "transport": {"type": "httpupgrade", "path": "PATH_PLACEHOLDER-s-ss-hu"}
+    },
+    {
+      "type": "shadowsocks", "tag": "ss-grpc-in", "listen": "127.0.0.1", "listen_port": 11012,
+      "method": "SS_METHOD_PLACEHOLDER", "password": "PASS_PLACEHOLDER", "transport": {"type": "grpc", "service_name": "PATH_PLACEHOLDER-s-ss-grpc"}
     }
   ],
   "outbounds": [
@@ -76,7 +58,7 @@
   ],
   "route": {
     "rules": [
-      {"action": "route", "ip_cidr": ["geoip:private"], "outbound": "direct"}
+      {"action": "route", "ip_cidr": ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "127.0.0.0/8"], "outbound": "direct"}
     ]
   }
 }
