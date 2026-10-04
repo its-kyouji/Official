@@ -1,16 +1,29 @@
-name: Build and Push Official Relay
+name: Build and Push — Official Relay
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # Pre-flight JSONC validation para hindi masayang ang build kung may mali sa template
+      - name: Validate JSONC Templates
+        run: |
+          python3 -c "
+          import json, re
+          for path in ['core/xray/config.json.template', 'core/singbox/config.json.template']:
+              if not open(path).read().strip(): continue
+              s = open(path).read()
+              s = re.sub(r'(\"(?:\\\\.|[^\"\\\\])*\")|//.*?$|/\*.*?\*/', lambda m: m.group(1) if m.group(1) else '', s, flags=re.MULTILINE|re.DOTALL)
+              print(f'✅ {path} syntax OK')
+          "
 
       - name: Log in to DockerHub
         uses: docker/login-action@v3
