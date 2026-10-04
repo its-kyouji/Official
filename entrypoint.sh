@@ -13,13 +13,11 @@ echo "[INIT] Stripping JSONC comments..."
 python3 -c "
 import re, sys, os
 try:
-    # Process Xray
     with open('/app/core/xray/config.json.template') as f: s = f.read()
     s = re.sub(r'(\"(?:\\\\.|[^\"\\\\])*\")|//.*?$|/\*.*?\*/', lambda m: m.group(1) if m.group(1) else '', s, flags=re.MULTILINE|re.DOTALL)
     os.makedirs('/etc/xray', exist_ok=True)
     with open('/etc/xray/config.json', 'w') as f: f.write(s)
 
-    # Process Sing-box
     with open('/app/core/singbox/config.json.template') as f: s = f.read()
     s = re.sub(r'(\"(?:\\\\.|[^\"\\\\])*\")|//.*?$|/\*.*?\*/', lambda m: m.group(1) if m.group(1) else '', s, flags=re.MULTILINE|re.DOTALL)
     os.makedirs('/etc/singbox', exist_ok=True)
@@ -55,11 +53,18 @@ if [ -z "${SUFFIX:-}" ]; then
 fi
 
 # 5. Build Base Paths and Named Placeholders Substitution
-export PASSWORD="${PASS:-${UUID}}"
-export SS_METHOD="${SS:-chacha20-ietf-poly1305}"
+export PASSWORD="${UUID}"
+export SS_METHOD="chacha20-ietf-poly1305"
 export WS_PATH_BASE="${PATH_PREFIX}/${SUFFIX}"
 
-echo "[INIT] Injecting placeholders into configs..."
+echo "[INIT] Preparing /run/cfg for connectors and relays..."
+mkdir -p /run/cfg/connector /run/cfg/relay
+cp -r /app/connector/. /run/cfg/connector/ 2>/dev/null || true
+cp /app/relay/*.json /run/cfg/relay/ 2>/dev/null || true
+find /run/cfg -type f -exec sed -i \
+  "s|PATH_PLACEHOLDER|${WS_PATH_BASE}|g; s|SUFFIX_PLACEHOLDER|${SUFFIX}|g; s|PREFIX_PLACEHOLDER|${PATH_PREFIX}|g" {} +
+
+echo "[INIT] Injecting placeholders into core configs..."
 python3 -c "
 import os, sys
 try:
@@ -85,6 +90,9 @@ export TARGET_PASS="${PASS:-${UUID}}"
 export TARGET_PROTO="${PROTO:-vless}"
 export TARGET_SEC="${SEC:-tls}"
 export TARGET_XPATH="${XPATH:-/}"
+export TARGET_SS="${SS:-chacha20-ietf-poly1305}"
+
+case "$TARGET_PROTO" in vless|vmess|trojan|ss) ;; *) echo "[INIT][FATAL] invalid PROTO: $TARGET_PROTO"; exit 1 ;; esac
 
 echo "[INIT] Processing outbound chains..."
 if [ -n "$TARGET_IP" ]; then
@@ -107,10 +115,12 @@ try:
                 o['settings']['vnext'][0]['address'] = ip
                 o['settings']['vnext'][0]['port'] = port
                 o['settings']['vnext'][0]['users'][0]['id'] = password
-            elif proto in ['trojan', 'shadowsocks']:
+            elif proto in ['trojan', 'ss']:
                 o['settings']['servers'][0]['address'] = ip
                 o['settings']['servers'][0]['port'] = port
                 o['settings']['servers'][0]['password'] = password
+                if proto == 'ss':
+                    o['settings']['servers'][0]['method'] = os.environ.get('TARGET_SS', 'chacha20-ietf-poly1305')
             o['streamSettings']['security'] = sec
             o['streamSettings']['wsSettings']['path'] = xpath
 
@@ -148,15 +158,25 @@ cat > /etc/xray/runtime.json <<EOF
 }
 EOF
 
-# 8. Setup Default SSH Account
+# 8. Setup Default SSH Accounts
 echo "[INIT] Configuring internal SSH accounts..."
-id -u kyouji >/dev/null 2>&1 || useradd -M -s /bin/false kyouji
-echo "kyouji:kyouji" | chpasswd
+ACCOUNTS="${ACCOUNTS:-kyouji:kyouji}"
+echo "$ACCOUNTS" | tr ',' '\n' | while IFS=: read -r u p; do
+  [ -z "$u" ] || [ -z "$p" ] && continue
+  id -u "$u" >/dev/null 2>&1 || useradd -M -s /bin/false "$u"
+  echo "$u:$p" | chpasswd
+done
 
 if [ ! -f /etc/dropbear/dropbear_rsa_host_key ]; then
     dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key -s 2048 >/dev/null 2>&1
 fi
 
+echo "[INIT] Pre-flight config tests..."
+XR=0; SB=0
+/usr/local/bin/xray run -test -c /etc/xray/config.json || XR=1
+/usr/local/bin/sing-box check -c /etc/singbox/config.json || SB=1
+[ "$XR$SB" = "00" ] || { echo "[INIT][FATAL] config test failed"; exit 1; }
+
 echo "[INIT] Initialization complete. Starting Supervisord..."
 # 9. Exec Supervisord
-exec /usr/bin/supervisord -c /app/supervisord.conf
+exec /usr/bin/supervisord -c /etc/supervisord.conf
