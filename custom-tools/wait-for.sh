@@ -1,0 +1,13 @@
+#!/bin/sh
+T="${WAIT_TIMEOUT:-60}"
+while [ $# -gt 0 ] && [ "$1" != "--" ]; do
+  h="${1%:*}"; p="${1##*:}"; i=0
+  until nc -z "$h" "$p" 2>/dev/null; do
+    i=$((i+1))
+    [ "$i" -ge "$((T*2))" ] && { echo "[WAIT] timeout $h:$p, continuing"; break; }
+    sleep 0.5
+  done
+  shift
+done
+shift
+exec "$@"
