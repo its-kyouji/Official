@@ -8,15 +8,22 @@ PATH_PREFIX="/relay"
 
 echo "[INIT] Starting container initialization..."
 
-# 1. Strip JSONC comments from core templates
+# 1. Strip JSONC comments from core templates and move to /etc
 echo "[INIT] Stripping JSONC comments..."
 python3 -c "
-import re, sys
+import re, sys, os
 try:
-    for path in ['/app/core/xray/config.json.template', '/app/core/singbox/config.json.template']:
-        with open(path) as f: s = f.read()
-        s = re.sub(r'(\"(?:\\\\.|[^\"\\\\])*\")|//.*?$|/\*.*?\*/', lambda m: m.group(1) if m.group(1) else '', s, flags=re.MULTILINE|re.DOTALL)
-        with open(path.replace('.template', ''), 'w') as f: f.write(s)
+    # Process Xray
+    with open('/app/core/xray/config.json.template') as f: s = f.read()
+    s = re.sub(r'(\"(?:\\\\.|[^\"\\\\])*\")|//.*?$|/\*.*?\*/', lambda m: m.group(1) if m.group(1) else '', s, flags=re.MULTILINE|re.DOTALL)
+    os.makedirs('/etc/xray', exist_ok=True)
+    with open('/etc/xray/config.json', 'w') as f: f.write(s)
+
+    # Process Sing-box
+    with open('/app/core/singbox/config.json.template') as f: s = f.read()
+    s = re.sub(r'(\"(?:\\\\.|[^\"\\\\])*\")|//.*?$|/\*.*?\*/', lambda m: m.group(1) if m.group(1) else '', s, flags=re.MULTILINE|re.DOTALL)
+    os.makedirs('/etc/singbox', exist_ok=True)
+    with open('/etc/singbox/config.json', 'w') as f: f.write(s)
 except Exception as e:
     print(f'Error stripping comments: {e}')
     sys.exit(1)
