@@ -82,8 +82,10 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
         await asyncio.gather(relay(reader, b_writer), relay(b_reader, writer), return_exceptions=True)
 
-    except Exception: pass
-    finally: writer.close()
+    except Exception as e:
+        print(f"[FORTRESS] {type(e).__name__}: {e}", flush=True)
+    finally:
+        writer.close()
 
 # ==============================================================================
 # SERVER INITIALIZATION
