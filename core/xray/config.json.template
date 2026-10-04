@@ -157,11 +157,6 @@
         "network": "udp",
         "outboundTag": "block"
       },
-      {
-        "type": "field",
-        "domain": ["geosite:ads-normal"],
-        "outboundTag": "block"
-      }
     ]
   },
 
