@@ -38,7 +38,7 @@ RUN git clone --depth 1 https://github.com/ambrop72/badvpn.git /tmp/badvpn && \
 FROM debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV XRAY_VERSION="1.8.24"
+ENV XRAY_VERSION="26.7.28"
 ENV SINGBOX_VERSION="1.10.1"
 
 # ==============================================================================
