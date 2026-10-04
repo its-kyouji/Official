@@ -11,15 +11,17 @@
         respond "OK" 200
     }
 
-    # Dedicated XHTTP unbuffered streaming lane
-    handle /*-xh* {
-        reverse_proxy 127.0.0.1:10002 {
-            flush_interval -1
-            transport http {
-                versions h1 h2c 2
-            }
-        }
-    }
+    @xvless { path_regexp .*-x-vless-xh$ }
+    handle @xvless { reverse_proxy 127.0.0.1:10003 { flush_interval -1 transport http { versions h1 h2c 2 } } }
+
+    @xvmess { path_regexp .*-x-vmess-xh$ }
+    handle @xvmess { reverse_proxy 127.0.0.1:10007 { flush_interval -1 transport http { versions h1 h2c 2 } } }
+
+    @xtrojan { path_regexp .*-x-trojan-xh$ }
+    handle @xtrojan { reverse_proxy 127.0.0.1:10011 { flush_interval -1 transport http { versions h1 h2c 2 } } }
+
+    @xss { path_regexp .*-x-ss-xh$ }
+    handle @xss { reverse_proxy 127.0.0.1:10015 { flush_interval -1 transport http { versions h1 h2c 2 } } }
 
     handle {
         root * /app/panel
