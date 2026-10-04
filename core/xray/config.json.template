@@ -159,7 +159,7 @@
       },
       {
         "type": "field",
-        "domain": ["geosite:normal"],
+        "domain": ["geosite:private"],
         "outboundTag": "block"
       }
     ]
