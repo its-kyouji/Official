@@ -48,4 +48,12 @@ WORKDIR /app
 RUN chmod +x /app/entrypoint.sh /app/relay/*.py /app/custom-tools/*.sh
 
 EXPOSE 8080
+
+# ==============================================================================
+# HEALTHCHECK — For local Docker testing/diagnostics
+# Uses Fortress/Nginx/Caddy /health endpoint to verify multiplexer state
+# ==============================================================================
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD curl -f http://127.0.0.1:8080/health || exit 1
+
 ENTRYPOINT ["/app/entrypoint.sh"]
