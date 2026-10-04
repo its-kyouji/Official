@@ -20,14 +20,6 @@
       "transport": {"type": "httpupgrade", "path": "PATH_PLACEHOLDER-s-vless-hu"}
     },
     {
-      "type": "vless",
-      "tag": "vless-grpc-in",
-      "listen": "127.0.0.1",
-      "listen_port": 11003,
-      "users": [{"uuid": "UUID_PLACEHOLDER"}],
-      "transport": {"type": "grpc", "service_name": "PATH_PLACEHOLDER-s-vless-grpc"}
-    },
-    {
       "type": "vmess",
       "tag": "vmess-ws-in",
       "listen": "127.0.0.1",
@@ -44,14 +36,6 @@
       "transport": {"type": "httpupgrade", "path": "PATH_PLACEHOLDER-s-vmess-hu"}
     },
     {
-      "type": "vmess",
-      "tag": "vmess-grpc-in",
-      "listen": "127.0.0.1",
-      "listen_port": 11006,
-      "users": [{"uuid": "UUID_PLACEHOLDER", "alterId": 0}],
-      "transport": {"type": "grpc", "service_name": "PATH_PLACEHOLDER-s-vmess-grpc"}
-    },
-    {
       "type": "trojan",
       "tag": "trojan-ws-in",
       "listen": "127.0.0.1",
@@ -66,14 +50,6 @@
       "listen_port": 11008,
       "users": [{"password": "PASS_PLACEHOLDER"}],
       "transport": {"type": "httpupgrade", "path": "PATH_PLACEHOLDER-s-trojan-hu"}
-    },
-    {
-      "type": "trojan",
-      "tag": "trojan-grpc-in",
-      "listen": "127.0.0.1",
-      "listen_port": 11009,
-      "users": [{"password": "PASS_PLACEHOLDER"}],
-      "transport": {"type": "grpc", "service_name": "PATH_PLACEHOLDER-s-trojan-grpc"}
     }
   ],
   "outbounds": [
