@@ -1,0 +1,22 @@
+Port 2201
+Protocol 2
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+SyslogFacility AUTH
+LogLevel INFO
+LoginGraceTime 30
+PermitRootLogin no
+StrictModes yes
+MaxAuthTries 6
+MaxSessions 10
+PubkeyAuthentication yes
+PasswordAuthentication yes
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+UsePAM yes
+X11Forwarding no
+PrintMotd no
+ClientAliveInterval 60
+ClientAliveCountMax 3
+Subsystem sftp /usr/lib/openssh/sftp-server
