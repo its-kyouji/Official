@@ -1,0 +1,28 @@
+{
+    admin off
+    auto_https off
+    servers {
+        protocols h1 h2c
+    }
+}
+
+:8084 {
+    handle /health {
+        respond "OK" 200
+    }
+
+    # Dedicated XHTTP unbuffered streaming lane
+    handle /*-xh* {
+        reverse_proxy 127.0.0.1:10002 {
+            flush_interval -1
+            transport http {
+                versions h1 h2c 2
+            }
+        }
+    }
+
+    handle {
+        root * /app/panel
+        file_server
+    }
+}
