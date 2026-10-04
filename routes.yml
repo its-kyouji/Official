@@ -1,0 +1,172 @@
+# ==== ROUTES.YAML ====
+# Single source of truth. Render.py builds all configs from here.
+routes:
+  # XRAY INBOUNDS (10000 - 10015)
+  - core: xray
+    protocol: vless
+    transport: ws
+    proxy: nginx
+    port: 10000
+  - core: xray
+    protocol: vless
+    transport: hu
+    proxy: caddy
+    port: 10001
+  - core: xray
+    protocol: vless
+    transport: xh
+    proxy: caddy
+    port: 10002
+  - core: xray
+    protocol: vless
+    transport: grpc
+    proxy: haproxy_direct
+    port: 10003
+  - core: xray
+    protocol: vmess
+    transport: ws
+    proxy: nginx
+    port: 10004
+  - core: xray
+    protocol: vmess
+    transport: hu
+    proxy: caddy
+    port: 10005
+  - core: xray
+    protocol: vmess
+    transport: xh
+    proxy: caddy
+    port: 10006
+  - core: xray
+    protocol: vmess
+    transport: grpc
+    proxy: haproxy_direct
+    port: 10007
+  - core: xray
+    protocol: trojan
+    transport: ws
+    proxy: nginx
+    port: 10008
+  - core: xray
+    protocol: trojan
+    transport: hu
+    proxy: caddy
+    port: 10009
+  - core: xray
+    protocol: trojan
+    transport: xh
+    proxy: caddy
+    port: 10010
+  - core: xray
+    protocol: trojan
+    transport: grpc
+    proxy: haproxy_direct
+    port: 10011
+  - core: xray
+    protocol: ss
+    transport: ws
+    proxy: nginx
+    port: 10012
+  - core: xray
+    protocol: ss
+    transport: hu
+    proxy: caddy
+    port: 10013
+  - core: xray
+    protocol: ss
+    transport: xh
+    proxy: caddy
+    port: 10014
+  - core: xray
+    protocol: ss
+    transport: grpc
+    proxy: haproxy_direct
+    port: 10015
+
+  # SING-BOX INBOUNDS (11000 - 11011) - NO XHTTP
+  - core: singbox
+    protocol: vless
+    transport: ws
+    proxy: nginx
+    port: 11000
+  - core: singbox
+    protocol: vless
+    transport: hu
+    proxy: caddy
+    port: 11001
+  - core: singbox
+    protocol: vless
+    transport: grpc
+    proxy: haproxy_direct
+    port: 11002
+  - core: singbox
+    protocol: vmess
+    transport: ws
+    proxy: nginx
+    port: 11003
+  - core: singbox
+    protocol: vmess
+    transport: hu
+    proxy: caddy
+    port: 11004
+  - core: singbox
+    protocol: vmess
+    transport: grpc
+    proxy: haproxy_direct
+    port: 11005
+  - core: singbox
+    protocol: trojan
+    transport: ws
+    proxy: nginx
+    port: 11006
+  - core: singbox
+    protocol: trojan
+    transport: hu
+    proxy: caddy
+    port: 11007
+  - core: singbox
+    protocol: trojan
+    transport: grpc
+    proxy: haproxy_direct
+    port: 11008
+  - core: singbox
+    protocol: ss
+    transport: ws
+    proxy: nginx
+    port: 11009
+  - core: singbox
+    protocol: ss
+    transport: hu
+    proxy: caddy
+    port: 11010
+  - core: singbox
+    protocol: ss
+    transport: grpc
+    proxy: haproxy_direct
+    port: 11011
+
+  # SSH & OVPN BRIDGES (20000+)
+  - core: ssh
+    protocol: ssh
+    transport: ws
+    proxy: nginx
+    port: 20000
+    target_port: 2200
+  - core: ssh
+    protocol: ssh
+    transport: hu
+    proxy: caddy
+    port: 20001
+    target_port: 2200
+  - core: ssh
+    protocol: ssh
+    transport: xh
+    proxy: caddy
+    port: 20002
+    target_port: 2200
+  - core: ovpn
+    protocol: ovpn
+    transport: ws
+    proxy: nginx
+    port: 20003
+    target_port: 1194
