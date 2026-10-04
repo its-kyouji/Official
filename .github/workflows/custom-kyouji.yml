@@ -13,23 +13,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Pre-flight JSONC validation para hindi masayang ang build kung may mali sa template
-      - name: Validate JSONC Templates
+      # Validate JSONC syntax to prevent broken builds
+      - name: Validate JSONC Configs
         run: |
           python3 -c "
-          import json, re
+          import json, re, os
           for path in ['core/xray/config.json.template', 'core/singbox/config.json.template']:
-              if not open(path).read().strip(): continue
+              if not os.path.exists(path): continue
               s = open(path).read()
               s = re.sub(r'(\"(?:\\\\.|[^\"\\\\])*\")|//.*?$|/\*.*?\*/', lambda m: m.group(1) if m.group(1) else '', s, flags=re.MULTILINE|re.DOTALL)
+              json.loads(s)
               print(f'✅ {path} syntax OK')
           "
 
       - name: Log in to DockerHub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -40,5 +41,5 @@ jobs:
           context: .
           push: true
           tags: |
-            officialhq/kyouji:latest
-            officialhq/kyouji:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/kyouji:latest
+            ${{ secrets.DOCKER_USERNAME }}/kyouji:${{ github.sha }}
