@@ -2,7 +2,6 @@
   "log": {
     "loglevel": "warning"
   },
-  
   "dns": {
     "servers": [
       "https://cloudflare-dns.com/dns-query",
@@ -15,43 +14,30 @@
       { "ipPool": "198.18.0.0/15", "poolSize": 65535 }
     ]
   },
-
   "inbounds": [
     // ==== VLESS ====
     {
       "tag": "vless-ws-in", "port": 10001, "listen": "127.0.0.1", "protocol": "vless",
       "settings": { "clients": [{"id": "UUID_PLACEHOLDER"}], "decryption": "none" },
-      "streamSettings": {
-        "network": "ws", "wsSettings": {"path": "PATH_PLACEHOLDER-x-vless-ws"},
-        "sockopt": {"tcpFastOpen": true, "tcpNoDelay": true, "tcpKeepAliveInterval": 15, "tcpcongestion": "bbr", "tcpMaxSeg": 1420}
-      },
+      "streamSettings": { "network": "ws", "wsSettings": {"path": "PATH_PLACEHOLDER-x-vless-ws"} },
       "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic", "fakedns"] }
     },
     {
       "tag": "vless-hu-in", "port": 10002, "listen": "127.0.0.1", "protocol": "vless",
       "settings": { "clients": [{"id": "UUID_PLACEHOLDER"}], "decryption": "none" },
-      "streamSettings": {
-        "network": "httpupgrade", "httpupgradeSettings": {"path": "PATH_PLACEHOLDER-x-vless-hu"},
-        "sockopt": {"tcpFastOpen": true, "tcpNoDelay": true, "tcpKeepAliveInterval": 15, "tcpcongestion": "bbr", "tcpMaxSeg": 1420}
-      },
+      "streamSettings": { "network": "httpupgrade", "httpupgradeSettings": {"path": "PATH_PLACEHOLDER-x-vless-hu"} },
       "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic", "fakedns"] }
     },
     {
       "tag": "vless-xh-in", "port": 10003, "listen": "127.0.0.1", "protocol": "vless",
       "settings": { "clients": [{"id": "UUID_PLACEHOLDER"}], "decryption": "none" },
-      "streamSettings": {
-        "network": "xhttp", "xhttpSettings": {"path": "PATH_PLACEHOLDER-x-vless-xh", "mode": "auto"},
-        "sockopt": {"tcpFastOpen": true, "tcpNoDelay": true, "tcpKeepAliveInterval": 15, "tcpcongestion": "bbr", "tcpMaxSeg": 1420}
-      },
+      "streamSettings": { "network": "xhttp", "xhttpSettings": {"path": "PATH_PLACEHOLDER-x-vless-xh", "mode": "auto"} },
       "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic", "fakedns"] }
     },
     {
       "tag": "vless-grpc-in", "port": 10004, "listen": "127.0.0.1", "protocol": "vless",
       "settings": { "clients": [{"id": "UUID_PLACEHOLDER"}], "decryption": "none" },
-      "streamSettings": {
-        "network": "grpc", "grpcSettings": {"serviceName": "PATH_PLACEHOLDER-x-vless-grpc"},
-        "sockopt": {"tcpFastOpen": true, "tcpNoDelay": true, "tcpKeepAliveInterval": 15, "tcpcongestion": "bbr", "tcpMaxSeg": 1420}
-      },
+      "streamSettings": { "network": "grpc", "grpcSettings": {"serviceName": "PATH_PLACEHOLDER-x-vless-grpc"} },
       "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic", "fakedns"] }
     },
     
@@ -59,37 +45,25 @@
     {
       "tag": "vmess-ws-in", "port": 10005, "listen": "127.0.0.1", "protocol": "vmess",
       "settings": { "clients": [{"id": "UUID_PLACEHOLDER", "alterId": 0}] },
-      "streamSettings": {
-        "network": "ws", "wsSettings": {"path": "PATH_PLACEHOLDER-x-vmess-ws"},
-        "sockopt": {"tcpFastOpen": true, "tcpNoDelay": true, "tcpKeepAliveInterval": 15, "tcpcongestion": "bbr", "tcpMaxSeg": 1420}
-      },
+      "streamSettings": { "network": "ws", "wsSettings": {"path": "PATH_PLACEHOLDER-x-vmess-ws"} },
       "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic", "fakedns"] }
     },
     {
       "tag": "vmess-hu-in", "port": 10006, "listen": "127.0.0.1", "protocol": "vmess",
       "settings": { "clients": [{"id": "UUID_PLACEHOLDER", "alterId": 0}] },
-      "streamSettings": {
-        "network": "httpupgrade", "httpupgradeSettings": {"path": "PATH_PLACEHOLDER-x-vmess-hu"},
-        "sockopt": {"tcpFastOpen": true, "tcpNoDelay": true, "tcpKeepAliveInterval": 15, "tcpcongestion": "bbr", "tcpMaxSeg": 1420}
-      },
+      "streamSettings": { "network": "httpupgrade", "httpupgradeSettings": {"path": "PATH_PLACEHOLDER-x-vmess-hu"} },
       "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic", "fakedns"] }
     },
     {
       "tag": "vmess-xh-in", "port": 10007, "listen": "127.0.0.1", "protocol": "vmess",
       "settings": { "clients": [{"id": "UUID_PLACEHOLDER", "alterId": 0}] },
-      "streamSettings": {
-        "network": "xhttp", "xhttpSettings": {"path": "PATH_PLACEHOLDER-x-vmess-xh", "mode": "auto"},
-        "sockopt": {"tcpFastOpen": true, "tcpNoDelay": true, "tcpKeepAliveInterval": 15, "tcpcongestion": "bbr", "tcpMaxSeg": 1420}
-      },
+      "streamSettings": { "network": "xhttp", "xhttpSettings": {"path": "PATH_PLACEHOLDER-x-vmess-xh", "mode": "auto"} },
       "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic", "fakedns"] }
     },
     {
       "tag": "vmess-grpc-in", "port": 10008, "listen": "127.0.0.1", "protocol": "vmess",
       "settings": { "clients": [{"id": "UUID_PLACEHOLDER", "alterId": 0}] },
-      "streamSettings": {
-        "network": "grpc", "grpcSettings": {"serviceName": "PATH_PLACEHOLDER-x-vmess-grpc"},
-        "sockopt": {"tcpFastOpen": true, "tcpNoDelay": true, "tcpKeepAliveInterval": 15, "tcpcongestion": "bbr", "tcpMaxSeg": 1420}
-      },
+      "streamSettings": { "network": "grpc", "grpcSettings": {"serviceName": "PATH_PLACEHOLDER-x-vmess-grpc"} },
       "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic", "fakedns"] }
     },
 
@@ -97,37 +71,25 @@
     {
       "tag": "trojan-ws-in", "port": 10009, "listen": "127.0.0.1", "protocol": "trojan",
       "settings": { "clients": [{"password": "PASS_PLACEHOLDER"}] },
-      "streamSettings": {
-        "network": "ws", "wsSettings": {"path": "PATH_PLACEHOLDER-x-trojan-ws"},
-        "sockopt": {"tcpFastOpen": true, "tcpNoDelay": true, "tcpKeepAliveInterval": 15, "tcpcongestion": "bbr", "tcpMaxSeg": 1420}
-      },
+      "streamSettings": { "network": "ws", "wsSettings": {"path": "PATH_PLACEHOLDER-x-trojan-ws"} },
       "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic", "fakedns"] }
     },
     {
       "tag": "trojan-hu-in", "port": 10010, "listen": "127.0.0.1", "protocol": "trojan",
       "settings": { "clients": [{"password": "PASS_PLACEHOLDER"}] },
-      "streamSettings": {
-        "network": "httpupgrade", "httpupgradeSettings": {"path": "PATH_PLACEHOLDER-x-trojan-hu"},
-        "sockopt": {"tcpFastOpen": true, "tcpNoDelay": true, "tcpKeepAliveInterval": 15, "tcpcongestion": "bbr", "tcpMaxSeg": 1420}
-      },
+      "streamSettings": { "network": "httpupgrade", "httpupgradeSettings": {"path": "PATH_PLACEHOLDER-x-trojan-hu"} },
       "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic", "fakedns"] }
     },
     {
       "tag": "trojan-xh-in", "port": 10011, "listen": "127.0.0.1", "protocol": "trojan",
       "settings": { "clients": [{"password": "PASS_PLACEHOLDER"}] },
-      "streamSettings": {
-        "network": "xhttp", "xhttpSettings": {"path": "PATH_PLACEHOLDER-x-trojan-xh", "mode": "auto"},
-        "sockopt": {"tcpFastOpen": true, "tcpNoDelay": true, "tcpKeepAliveInterval": 15, "tcpcongestion": "bbr", "tcpMaxSeg": 1420}
-      },
+      "streamSettings": { "network": "xhttp", "xhttpSettings": {"path": "PATH_PLACEHOLDER-x-trojan-xh", "mode": "auto"} },
       "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic", "fakedns"] }
     },
     {
       "tag": "trojan-grpc-in", "port": 10012, "listen": "127.0.0.1", "protocol": "trojan",
       "settings": { "clients": [{"password": "PASS_PLACEHOLDER"}] },
-      "streamSettings": {
-        "network": "grpc", "grpcSettings": {"serviceName": "PATH_PLACEHOLDER-x-trojan-grpc"},
-        "sockopt": {"tcpFastOpen": true, "tcpNoDelay": true, "tcpKeepAliveInterval": 15, "tcpcongestion": "bbr", "tcpMaxSeg": 1420}
-      },
+      "streamSettings": { "network": "grpc", "grpcSettings": {"serviceName": "PATH_PLACEHOLDER-x-trojan-grpc"} },
       "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic", "fakedns"] }
     },
 
@@ -135,40 +97,50 @@
     {
       "tag": "ss-ws-in", "port": 10013, "listen": "127.0.0.1", "protocol": "shadowsocks",
       "settings": { "clients": [{"password": "PASS_PLACEHOLDER", "method": "SS_METHOD_PLACEHOLDER"}] },
-      "streamSettings": {
-        "network": "ws", "wsSettings": {"path": "PATH_PLACEHOLDER-x-ss-ws"},
-        "sockopt": {"tcpFastOpen": true, "tcpNoDelay": true, "tcpKeepAliveInterval": 15, "tcpcongestion": "bbr"}
-      }
+      "streamSettings": { "network": "ws", "wsSettings": {"path": "PATH_PLACEHOLDER-x-ss-ws"} }
     },
     {
       "tag": "ss-hu-in", "port": 10014, "listen": "127.0.0.1", "protocol": "shadowsocks",
       "settings": { "clients": [{"password": "PASS_PLACEHOLDER", "method": "SS_METHOD_PLACEHOLDER"}] },
-      "streamSettings": {
-        "network": "httpupgrade", "httpupgradeSettings": {"path": "PATH_PLACEHOLDER-x-ss-hu"},
-        "sockopt": {"tcpFastOpen": true, "tcpNoDelay": true, "tcpKeepAliveInterval": 15, "tcpcongestion": "bbr"}
-      }
+      "streamSettings": { "network": "httpupgrade", "httpupgradeSettings": {"path": "PATH_PLACEHOLDER-x-ss-hu"} }
     },
     {
       "tag": "ss-xh-in", "port": 10015, "listen": "127.0.0.1", "protocol": "shadowsocks",
       "settings": { "clients": [{"password": "PASS_PLACEHOLDER", "method": "SS_METHOD_PLACEHOLDER"}] },
-      "streamSettings": {
-        "network": "xhttp", "xhttpSettings": {"path": "PATH_PLACEHOLDER-x-ss-xh", "mode": "auto"},
-        "sockopt": {"tcpFastOpen": true, "tcpNoDelay": true, "tcpKeepAliveInterval": 15, "tcpcongestion": "bbr"}
-      }
+      "streamSettings": { "network": "xhttp", "xhttpSettings": {"path": "PATH_PLACEHOLDER-x-ss-xh", "mode": "auto"} }
     },
     {
       "tag": "ss-grpc-in", "port": 10016, "listen": "127.0.0.1", "protocol": "shadowsocks",
       "settings": { "clients": [{"password": "PASS_PLACEHOLDER", "method": "SS_METHOD_PLACEHOLDER"}] },
-      "streamSettings": {
-        "network": "grpc", "grpcSettings": {"serviceName": "PATH_PLACEHOLDER-x-ss-grpc"},
-        "sockopt": {"tcpFastOpen": true, "tcpNoDelay": true, "tcpKeepAliveInterval": 15, "tcpcongestion": "bbr"}
-      }
+      "streamSettings": { "network": "grpc", "grpcSettings": {"serviceName": "PATH_PLACEHOLDER-x-ss-grpc"} }
     }
   ],
 
   "outbounds": [
     { "tag": "direct", "protocol": "freedom", "settings": { "domainStrategy": "AsIs" } },
-    { "tag": "block", "protocol": "blackhole" }
+    { "tag": "block", "protocol": "blackhole" },
+    
+    // ==== CHAIN OUTBOUNDS (Required by entrypoint pointing logic) ====
+    {
+      "tag": "chain-vless", "protocol": "vless",
+      "settings": { "vnext": [{"address": "127.0.0.1", "port": 443, "users": [{"id": "UUID_PLACEHOLDER", "encryption": "none"}]}] },
+      "streamSettings": { "network": "ws", "security": "tls", "tlsSettings": {"allowInsecure": false}, "wsSettings": {"path": "/"} }
+    },
+    {
+      "tag": "chain-vmess", "protocol": "vmess",
+      "settings": { "vnext": [{"address": "127.0.0.1", "port": 443, "users": [{"id": "UUID_PLACEHOLDER", "alterId": 0}]}] },
+      "streamSettings": { "network": "ws", "security": "tls", "tlsSettings": {"allowInsecure": false}, "wsSettings": {"path": "/"} }
+    },
+    {
+      "tag": "chain-trojan", "protocol": "trojan",
+      "settings": { "servers": [{"address": "127.0.0.1", "port": 443, "password": "PASS_PLACEHOLDER"}] },
+      "streamSettings": { "network": "ws", "security": "tls", "tlsSettings": {"allowInsecure": false}, "wsSettings": {"path": "/"} }
+    },
+    {
+      "tag": "chain-ss", "protocol": "shadowsocks",
+      "settings": { "servers": [{"address": "127.0.0.1", "port": 443, "method": "SS_METHOD_PLACEHOLDER", "password": "PASS_PLACEHOLDER"}] },
+      "streamSettings": { "network": "ws", "security": "tls", "tlsSettings": {"allowInsecure": false}, "wsSettings": {"path": "/"} }
+    }
   ],
 
   "routing": {
@@ -177,11 +149,6 @@
       {
         "type": "field",
         "ip": ["geoip:private"],
-        "outboundTag": "direct"
-      },
-      {
-        "type": "field",
-        "ip": ["geoip:google", "geoip:facebook", "geoip:cloudflare", "geoip:cloudfront", "geoip:fastly", "geoip:netflix", "geoip:twitter", "geoip:telegram"],
         "outboundTag": "direct"
       },
       {
@@ -200,15 +167,7 @@
 
   "policy": {
     "levels": {
-      "0": {
-        "handshake": 4, "connIdle": 300, "uplinkOnly": 0, "downlinkOnly": 1, "bufferSize": 512
-      }
-    },
-    "system": {
-      "statsInboundUplink": false,
-      "statsInboundDownlink": false,
-      "statsOutboundUplink": false,
-      "statsOutboundDownlink": false
+      "0": { "handshake": 15, "connIdle": 300, "uplinkOnly": 0, "downlinkOnly": 1, "bufferSize": 512 }
     }
   }
 }
