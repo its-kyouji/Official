@@ -7,12 +7,14 @@
       {
         "tag": "cloudflare",
         "type": "https",
-        "server": "cloudflare-dns.com"
+        "server": "cloudflare-dns.com",
+        "domain_resolver": "local"
       },
       {
         "tag": "google",
         "type": "https",
-        "server": "dns.google"
+        "server": "dns.google",
+        "domain_resolver": "local"
       },
       {
         "tag": "local",
@@ -21,11 +23,6 @@
         "detour": "direct"
       }
     ],
-    "rules": [
-      {
-        "outbound": "any",
-        "server": "local"
-      }
-    ]
+    "final": "cloudflare"
   }
 }
