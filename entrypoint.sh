@@ -1,33 +1,8 @@
 #!/bin/bash
-# ==============================================================================
-# ENTRYPOINT — Resilient Initialization Script
-# ==============================================================================
 set -e
 
-PATH_PREFIX="/relay"
+export PATH_PREFIX="/relay"
 
-echo "[INIT] Starting container initialization..."
-
-# 1. Strip JSONC comments from core templates and move to /etc
-echo "[INIT] Stripping JSONC comments..."
-python3 -c "
-import re, sys, os
-try:
-    with open('/app/core/xray/config.json.template') as f: s = f.read()
-    s = re.sub(r'(\"(?:\\\\.|[^\"\\\\])*\")|//.*?$|/\*.*?\*/', lambda m: m.group(1) if m.group(1) else '', s, flags=re.MULTILINE|re.DOTALL)
-    os.makedirs('/etc/xray', exist_ok=True)
-    with open('/etc/xray/config.json', 'w') as f: f.write(s)
-
-    with open('/app/core/singbox/config.json.template') as f: s = f.read()
-    s = re.sub(r'(\"(?:\\\\.|[^\"\\\\])*\")|//.*?$|/\*.*?\*/', lambda m: m.group(1) if m.group(1) else '', s, flags=re.MULTILINE|re.DOTALL)
-    os.makedirs('/etc/singbox', exist_ok=True)
-    with open('/etc/singbox/config.json', 'w') as f: f.write(s)
-except Exception as e:
-    print(f'Error stripping comments: {e}')
-    sys.exit(1)
-"
-
-# 2. Get Cloud Run Server IP via metadata server with fallbacks
 echo "[INIT] Fetching external IP..."
 set +e
 export SERVER_IP=$(curl -s --max-time 3 -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip" 2>/dev/null)
@@ -35,9 +10,7 @@ if [ -z "$SERVER_IP" ]; then
   export SERVER_IP=$(curl -s --max-time 5 ifconfig.me || curl -s --max-time 5 api.ipify.org || echo "127.0.0.1")
 fi
 set -e
-echo "[INIT] Server IP resolved to: $SERVER_IP"
 
-# 3. Handle UUID
 if [ -z "${UUID:-}" ]; then
   if [ -f /proc/sys/kernel/random/uuid ]; then
     export UUID=$(cat /proc/sys/kernel/random/uuid)
@@ -45,108 +18,90 @@ if [ -z "${UUID:-}" ]; then
     export UUID=$(python3 -c "import uuid; print(uuid.uuid4())")
   fi
 fi
-echo "[INIT] Using UUID: $UUID"
 
-# 4. Handle SUFFIX
 if [ -z "${SUFFIX:-}" ]; then
   export SUFFIX=$(cat /dev/urandom | tr -dc 'a-z0-9' | head -c 8)
 fi
 
-# 5. Build Base Paths and Named Placeholders Substitution
-export PASSWORD="${UUID}"
-export SS_METHOD="chacha20-ietf-poly1305"
-export WS_PATH_BASE="${PATH_PREFIX}/${SUFFIX}"
+export BASE_PATH="${PATH_PREFIX}/${SUFFIX}"
+export IN_PASS="${UUID}"
+export IN_SS="chacha20-ietf-poly1305"
+export EXIT_IP="${IP:-}"
+export EXIT_PORT="${XPORT:-443}"
+export EXIT_PASS="${PASS:-${UUID}}"
+export EXIT_PATH="${XPATH:-/}"
+export EXIT_PROTO="${PROTO:-vless}"
+export EXIT_SS="${SS:-chacha20-ietf-poly1305}"
+export EXIT_SEC="${SEC:-tls}"
 
-echo "[INIT] Preparing /run/cfg for connectors and relays..."
-mkdir -p /run/cfg/connector /run/cfg/relay
+echo "[INIT] Flattening configurations to /etc and /run/cfg..."
+rm -rf /etc/xray/conf; mkdir -p /etc/xray/conf
+cp /app/core/xray/00-base/*.json /etc/xray/conf/ 2>/dev/null || true
+for d in /app/core/xray/*+*/; do
+  [ -d "$d" ] || continue
+  n=$(basename "$d")
+  cp "$d/inbounds.json" "/etc/xray/conf/20_${n}_inbounds.json"
+  if [ -n "$EXIT_IP" ] && [ "${n%%+*}" = "$EXIT_PROTO" ]; then
+    cp "$d/chain.json" "/etc/xray/conf/30_${n}_chain.json"
+  fi
+done
+
+rm -rf /etc/singbox/conf; mkdir -p /etc/singbox/conf
+cp /app/core/singbox/00-base/*.json /etc/singbox/conf/ 2>/dev/null || true
+for d in /app/core/singbox/*+*/; do
+  [ -d "$d" ] || continue
+  n=$(basename "$d")
+  cp "$d/inbounds.json" "/etc/singbox/conf/20_${n}_inbounds.json"
+  if [ -n "$EXIT_IP" ] && [ "${n%%+*}" = "$EXIT_PROTO" ]; then
+    cp "$d/chain.json" "/etc/singbox/conf/30_${n}_chain.json"
+  fi
+done
+
 cp -r /app/connector/. /run/cfg/connector/ 2>/dev/null || true
-cp /app/relay/*.json /run/cfg/relay/ 2>/dev/null || true
-find /run/cfg -type f -exec sed -i \
-  "s|PATH_PLACEHOLDER|${WS_PATH_BASE}|g; s|SUFFIX_PLACEHOLDER|${SUFFIX}|g; s|PREFIX_PLACEHOLDER|${PATH_PREFIX}|g" {} +
+cp -r /app/relay/. /run/cfg/relay/ 2>/dev/null || true
 
-echo "[INIT] Injecting placeholders into core configs..."
-python3 -c "
-import os, sys
-try:
-    uuid = os.environ.get('UUID', '')
-    password = os.environ.get('PASSWORD', '')
-    base_path = os.environ.get('WS_PATH_BASE', '')
-    ss_method = os.environ.get('SS_METHOD', '')
+echo "[INIT] Processing JSON substitution & stripping..."
+python3 -c '
+import os, re, sys
 
-    for cfg_path in ['/etc/xray/config.json', '/etc/singbox/config.json']:
-        with open(cfg_path, 'r') as f: content = f.read()
-        content = content.replace('UUID_PLACEHOLDER', uuid).replace('PASS_PLACEHOLDER', password)
-        content = content.replace('SS_METHOD_PLACEHOLDER', ss_method).replace('PATH_PLACEHOLDER', base_path)
-        with open(cfg_path, 'w') as f: f.write(content)
-except Exception as e:
-    print(f'Error injecting placeholders: {e}')
-    sys.exit(1)
-"
+tokens = {
+    "__UUID__": os.environ.get("UUID", ""),
+    "__IN_PASS__": os.environ.get("IN_PASS", ""),
+    "__IN_SS__": os.environ.get("IN_SS", ""),
+    "__BASE_PATH__": os.environ.get("BASE_PATH", ""),
+    "__EXIT_IP__": os.environ.get("EXIT_IP", ""),
+    "__EXIT_PASS__": os.environ.get("EXIT_PASS", ""),
+    "__EXIT_PATH__": os.environ.get("EXIT_PATH", ""),
+    "__EXIT_SEC__": os.environ.get("EXIT_SEC", ""),
+    "__EXIT_SS__": os.environ.get("EXIT_SS", ""),
+    "PREFIX_PLACEHOLDER": os.environ.get("PATH_PREFIX", ""),
+    "SUFFIX_PLACEHOLDER": os.environ.get("SUFFIX", "")
+}
+numeric_port = os.environ.get("EXIT_PORT", "443")
 
-# 6. Chain Outbound Pointing Logic
-export TARGET_IP="${IP:-}"
-export TARGET_PORT="${XPORT:-443}"
-export TARGET_PASS="${PASS:-${UUID}}"
-export TARGET_PROTO="${PROTO:-vless}"
-export TARGET_SEC="${SEC:-tls}"
-export TARGET_XPATH="${XPATH:-/}"
-export TARGET_SS="${SS:-chacha20-ietf-poly1305}"
+def strip_jsonc(text):
+    return re.sub(r"(\"(?:\\\\.|[^\"\\\\])*\")|//.*?$|/\*.*?\*/", lambda m: m.group(1) if m.group(1) else "", text, flags=re.MULTILINE|re.DOTALL)
 
-case "$TARGET_PROTO" in vless|vmess|trojan|ss) ;; *) echo "[INIT][FATAL] invalid PROTO: $TARGET_PROTO"; exit 1 ;; esac
+dirs_to_process = ["/etc/xray/conf", "/etc/singbox/conf", "/run/cfg"]
+for d in dirs_to_process:
+    for root, _, files in os.walk(d):
+        for f in files:
+            p = os.path.join(root, f)
+            with open(p, "r") as file: content = file.read()
+            if p.endswith(".json"): content = strip_jsonc(content)
+            
+            # Remove quotes for numeric ports
+            content = content.replace("\"__EXIT_PORT__\"", numeric_port)
+            
+            for k, v in tokens.items():
+                content = content.replace(k, v)
+                
+            if "__" in content:
+                print(f"[FATAL] Leftover token found in {p}")
+                sys.exit(1)
+            with open(p, "w") as file: file.write(content)
+'
 
-echo "[INIT] Processing outbound chains..."
-if [ -n "$TARGET_IP" ]; then
-  python3 -c "
-import json, os, sys
-try:
-    ip = os.environ.get('TARGET_IP', '')
-    port = int(os.environ.get('TARGET_PORT', '443'))
-    password = os.environ.get('TARGET_PASS', '')
-    proto = os.environ.get('TARGET_PROTO', 'vless')
-    sec = os.environ.get('TARGET_SEC', 'tls')
-    xpath = os.environ.get('TARGET_XPATH', '/')
-
-    with open('/etc/xray/config.json', 'r') as f: c = json.load(f)
-
-    chain_tag = f'chain-{proto}'
-    for o in c.get('outbounds', []):
-        if o.get('tag') == chain_tag:
-            if proto in ['vless', 'vmess']:
-                o['settings']['vnext'][0]['address'] = ip
-                o['settings']['vnext'][0]['port'] = port
-                o['settings']['vnext'][0]['users'][0]['id'] = password
-            elif proto in ['trojan', 'ss']:
-                o['settings']['servers'][0]['address'] = ip
-                o['settings']['servers'][0]['port'] = port
-                o['settings']['servers'][0]['password'] = password
-                if proto == 'ss':
-                    o['settings']['servers'][0]['method'] = os.environ.get('TARGET_SS', 'chacha20-ietf-poly1305')
-            o['streamSettings']['security'] = sec
-            o['streamSettings']['wsSettings']['path'] = xpath
-
-    c['outbounds'] = [o for o in c.get('outbounds', []) if o.get('tag') in ['direct', 'block', chain_tag]]
-    if 'routing' in c and 'rules' in c['routing']:
-        c['routing']['rules'].append({'type': 'field', 'network': 'tcp,udp', 'outboundTag': chain_tag})
-    
-    with open('/etc/xray/config.json', 'w') as f: json.dump(c, f, indent=2)
-except Exception as e:
-    print(f'Error processing chain logic: {e}')
-    sys.exit(1)
-"
-else
-  python3 -c "
-import json, sys
-try:
-    with open('/etc/xray/config.json', 'r') as f: c = json.load(f)
-    c['outbounds'] = [o for o in c.get('outbounds', []) if o.get('tag') in ['direct', 'block']]
-    with open('/etc/xray/config.json', 'w') as f: json.dump(c, f, indent=2)
-except Exception as e:
-    print(f'Error removing chain logic: {e}')
-    sys.exit(1)
-"
-fi
-
-# 7. Write runtime.json
 echo "[INIT] Writing runtime.json..."
 cat > /etc/xray/runtime.json <<EOF
 {
@@ -158,8 +113,7 @@ cat > /etc/xray/runtime.json <<EOF
 }
 EOF
 
-# 8. Setup Default SSH Accounts
-echo "[INIT] Configuring internal SSH accounts..."
+echo "[INIT] Configuring SSH accounts..."
 ACCOUNTS="${ACCOUNTS:-kyouji:kyouji}"
 echo "$ACCOUNTS" | tr ',' '\n' | while IFS=: read -r u p; do
   [ -z "$u" ] || [ -z "$p" ] && continue
@@ -168,15 +122,22 @@ echo "$ACCOUNTS" | tr ',' '\n' | while IFS=: read -r u p; do
 done
 
 if [ ! -f /etc/dropbear/dropbear_rsa_host_key ]; then
+    mkdir -p /etc/dropbear
     dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key -s 2048 >/dev/null 2>&1
 fi
+ssh-keygen -A >/dev/null 2>&1
 
 echo "[INIT] Pre-flight config tests..."
-XR=0; SB=0
-/usr/local/bin/xray run -test -c /etc/xray/config.json || XR=1
-/usr/local/bin/sing-box check -c /etc/singbox/config.json || SB=1
-[ "$XR$SB" = "00" ] || { echo "[INIT][FATAL] config test failed"; exit 1; }
+FAIL=0
+/usr/local/bin/xray run -test -confdir /etc/xray/conf || FAIL=1
+/usr/local/bin/sing-box check -C /etc/singbox/conf || FAIL=1
+/usr/sbin/haproxy -c -f /run/cfg/connector/haproxy/haproxy.cfg || FAIL=1
+envoy --mode validate -c /run/cfg/connector/envoy/envoy.yaml || FAIL=1
+nginx -t -c /run/cfg/connector/nginx/nginx.conf || FAIL=1
+caddy validate --config /run/cfg/connector/caddy/Caddyfile --adapter caddyfile || FAIL=1
+python3 -m py_compile /run/cfg/relay/*.py || FAIL=1
+
+[ "$FAIL" -eq 0 ] || { echo "[INIT][FATAL] Pre-flight tests failed!"; exit 1; }
 
 echo "[INIT] Initialization complete. Starting Supervisord..."
-# 9. Exec Supervisord
-exec /usr/bin/supervisord -c /etc/supervisord.conf
+exec /usr/bin/supervisord -c /app/supervisord.conf
