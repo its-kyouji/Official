@@ -1,17 +1,18 @@
-# Port Allocation Map
-
-*   **Public Edge Port:** `$PORT` (Injected by Cloud Run, defaults to `8080`)
-*   **Fortress L4 Shield:** `8080` (Binds $PORT directly)
-*   **Envoy Circuit Breaker:** `8081`
-*   **HAProxy Master Router:** `8082`
-*   **Nginx (WS lanes + Panel):** `8083`
-*   **Caddy (XHTTP lanes):** `8084`
-*   **Sub Server & Vault API:** `8085`
-*   **Xray Inbounds:** `10001 - 10016`
-*   **Sing-box Inbounds:** `11001 - 11012`
-*   **Dropbear SSH Backend:** `2200`
-*   **OpenSSH Backend:** `2201`
-*   **BadVPN UDPGW:** `7300`
-*   **Bridge SSH:** `2222`
-*   **Bridge OVPN:** `2223`
-*   **Cert Server (/cert):** `2224`
+# Port Mapping (Strictly Unique)
+- 8080: Cloud Run Target (Fortress Shield)
+- 8081: Envoy Proxy (h2c/gRPC handler)
+- 8082: HAProxy (L7 Router)
+- 8083: Nginx (WS/HU lane & Panel)
+- 8084: Caddy (XHTTP lane)
+- 10001-10004: Xray VLESS (ws, hu, xh, grpc)
+- 10005-10008: Xray VMESS (ws, hu, xh, grpc)
+- 10009-10012: Xray TROJAN (ws, hu, xh, grpc)
+- 10013-10016: Xray SS (ws, hu, xh, grpc)
+- 11001-11003: Sing-box VLESS (ws, hu, grpc)
+- 11004-11006: Sing-box VMESS (ws, hu, grpc)
+- 11007-11009: Sing-box TROJAN (ws, hu, grpc)
+- 2200: Dropbear local
+- 2201: OpenSSH local
+- 2222: Bridge Dropbear
+- 2223: Bridge OpenSSH
+- 2224: Bridge OVPN
