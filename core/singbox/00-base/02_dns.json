@@ -1,0 +1,14 @@
+{
+  // ==== MODERN DNS ====
+  "dns": {
+    "servers": [
+      { "tag": "cloudflare", "address": "https://cloudflare-dns.com/dns-query" },
+      { "tag": "google", "address": "https://dns.google/dns-query" },
+      { "tag": "local", "address": "1.1.1.1", "detour": "direct" },
+      { "tag": "block", "address": "rcode://success" }
+    ],
+    "rules": [
+      { "outbound": "any", "server": "local" }
+    ]
+  }
+}
