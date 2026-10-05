@@ -1,14 +1,11 @@
-# Official Relay Core (Kyouji Architecture)
+# Official HQ Kyouji Multiplex
 
-Production-grade, multiplexed container runtime engineered for Google Cloud Run. Consolidates Xray-core, Sing-box, OpenSSH, Dropbear, BadVPN, and OpenVPN relay capabilities behind a strict non-overlapping proxy chain.
+Modular Cloud Run proxy backend utilizing Xray, Sing-box, Nginx, HAProxy, Envoy, and Caddy.
 
-## Cloud Run Service Settings
-*   **Port:** 8080 (Managed via `$PORT`)
-*   **Request Timeout:** 3600 seconds
-*   **Concurrency:** 1000
-*   **Min Instances:** 1 (Mandatory to prevent cold-start scale-to-zero dropping long-lived streams)
-*   **Execution Environment:** gen2
-*   **CPU Allocation:** --no-cpu-throttling (Always-on CPU required for continuous proxy tunneling)
+## ⚠️ Scaling Warning
+`UUID` and `SUFFIX` generate dynamically per instance at startup. 
+If scaling beyond `max-instances=1`, you **MUST** statically assign `UUID` and `SUFFIX` in the Cloud Run environment variables to prevent credentials from mismatching across different instances.
 
-## Important Operational Note on Dynamic IDs
-By default, `UUID` and `SUFFIX` are generated dynamically per instance startup if left blank. When scaling your Cloud Run deployment beyond `min-instances=1`, you **must** explicitly define `UUID` and `SUFFIX` in your environment variables to ensure consistent client link distribution across instances.
+## Deployment
+Use the included `custom-tools/deploy.sh` or Docker build logic.
+Required Env: `$PORT` is injected by Cloud Run. Set `$IP`, `$PROTO`, and `$XPORT` for exit node pointing.
