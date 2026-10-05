@@ -1,10 +1,15 @@
 {
+  // =================
+  // IP RATE LIMITING
+  // =================
+
   "ban_threshold": 150,
   "ban_time_seconds": 600,
-  "max_connections": 950,
-  "handshake_timeout": 4,
-  "backend_connect_timeout": 10,
-  "idle_timeout": 600,
+
+  // =================
+  // ALLOWED PATHS
+  // =================
+
   "whitelist_paths": [
     "/",
     "/health",
