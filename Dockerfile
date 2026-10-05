@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Build Dropbear 2024.85 (OpenSSH banner spoofing compatible)
 WORKDIR /build
-RUN wget https://dropbear.nl/mirror/releases/dropbear-2024.85.tar.bz2 || wget --no-check-certificate https://matt.ucc.asn.au/dropbear/releases/dropbear-2024.85.tar.bz2
+RUN wget --no-check-certificate https://matt.ucc.asn.au/dropbear/releases/dropbear-2024.85.tar.bz2 && \
+    tar -xjf dropbear-2024.85.tar.bz2
 WORKDIR /build/dropbear-2024.85
 RUN ./configure --disable-zlib --disable-syslog && make && make install
 
@@ -30,10 +31,11 @@ ENV XRAY_VERSION="26.7.28"
 ENV SINGBOX_VERSION="1.14.2"
 ENV DEBIAN_FRONTEND="noninteractive"
 
+# Fixed: Added gnupg and corrected Envoy key URL to signing.key
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl unzip python3 nginx haproxy caddy ca-certificates openssh-server \
     debian-keyring debian-archive-keyring apt-transport-https netcat-openbsd gnupg \
-    && curl -sL 'https://apt.envoyproxy.io/rsa.key' | gpg --dearmor -o /usr/share/keyrings/envoy-keyring.gpg \
+    && curl -sL 'https://apt.envoyproxy.io/signing.key' | gpg --dearmor -o /usr/share/keyrings/envoy-keyring.gpg \
     && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/envoy-keyring.gpg] https://apt.envoyproxy.io bookworm main" > /etc/apt/sources.list.d/envoy.list \
     && apt-get update && apt-get install -y envoy \
     && rm -rf /var/lib/apt/lists/*
@@ -56,7 +58,6 @@ COPY --from=builder /usr/local/bin/badvpn-udpgw /usr/local/bin/
 
 # Fetch Geo Data for Xray ONLY
 RUN curl -sSL "https://github.com/v2fly/geoip/releases/latest/download/geoip.dat" -o /usr/local/share/xray/geoip.dat
-# Add your custom geosite.dat download here if needed.
 
 # Setup Workspace
 WORKDIR /app
