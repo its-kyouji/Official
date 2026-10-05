@@ -1,5 +1,6 @@
-name: Build and Push — Official Relay
+name: Official HQ Kyouji
 
+# Pipeline Triggers: Execute on main branch updates or manual dispatch
 on:
   push:
     branches: [main]
@@ -7,43 +8,48 @@ on:
 
 jobs:
   build:
+    name: Build and Publish
     runs-on: ubuntu-latest
 
     steps:
+      # Process 1: Source Control Checkout
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # In-update na validation: Ii-scan lahat ng modular JSON configs
+      # Process 2: Configuration Integrity Check (JSONC Syntax Validation)
       - name: Validate Modular JSONC Configs
         run: |
           python3 -c "
           import json, re, os, glob
           
-          # Hanapin lahat ng .json sa loob ng core/ directory
+          # Scan all modular configuration files
           files = glob.glob('core/**/*.json', recursive=True)
           
           for path in files:
               s = open(path).read()
-              # Tanggalin ang JSONC comments (// at /* */)
+              # Strip JSONC comments (// and /* */) prior to parsing
               s = re.sub(r'(\"(?:\\\\.|[^\"\\\\])*\")|//.*?$|/\*.*?\*/', lambda m: m.group(1) if m.group(1) else '', s, flags=re.MULTILINE|re.DOTALL)
               
               try:
                   json.loads(s)
                   print(f'✅ {path} syntax OK')
               except json.JSONDecodeError as e:
-                  print(f'❌ SYNTAX ERROR sa {path}: {e}')
+                  print(f'❌ SYNTAX ERROR in {path}: {e}')
                   exit(1)
           "
 
+      # Process 3: Container Registry Authentication
       - name: Log in to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
+      # Process 4: Build Environment Provisioning (Docker Buildx)
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # Process 5: Image Tag & SHA and Registry Push
       - name: Build and Push Image
         uses: docker/build-push-action@v5
         with:
