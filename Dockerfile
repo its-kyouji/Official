@@ -4,7 +4,7 @@
 FROM debian:bookworm-slim AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential wget git cmake zlib1g-dev \
+    build-essential wget git cmake zlib1g-dev ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Build Dropbear 2024.85 (OpenSSH banner spoofing compatible)
