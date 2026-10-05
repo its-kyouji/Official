@@ -1,5 +1,0 @@
-{
-  "max_header_size": 16384,
-  "read_timeout": 2.0,
-  "max_connections": 950
-}
