@@ -16,11 +16,11 @@ RUN ./configure --disable-zlib --disable-syslog && make && make install
 
 # Build BadVPN (udpgw)
 WORKDIR /build
-RUN git clone https://github.com/ambrop72/badvpn.git
+RUN git clone --depth 1 https://github.com/ambrop72/badvpn.git
 WORKDIR /build/badvpn
 RUN mkdir build && cd build && \
     cmake .. -DBUILD_NOTHING_BY_DEFAULT=1 -DBUILD_UDPGW=1 && \
-    make && cp badvpn-udpgw /usr/local/bin/
+    make install
 
 # ==============================================================================
 # STAGE 2: RUNTIME
