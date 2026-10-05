@@ -33,9 +33,9 @@ ENV DEBIAN_FRONTEND="noninteractive"
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl unzip python3 nginx haproxy caddy ca-certificates openssh-server \
     debian-keyring debian-archive-keyring apt-transport-https netcat-openbsd gnupg \
-    && curl -sL 'https://deb.dl.getenvoy.io/public/gpg.8115BA8E629CC074.key' | gpg --dearmor -o /usr/share/keyrings/getenvoy-keyring.gpg \
-    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/getenvoy-keyring.gpg] https://deb.dl.getenvoy.io/public/deb/debian bookworm main" > /etc/apt/sources.list.d/getenvoy.list \
-    && apt-get update && apt-get install -y getenvoy-envoy \
+    && curl -sL 'https://apt.envoyproxy.io/rsa.key' | gpg --dearmor -o /usr/share/keyrings/envoy-keyring.gpg \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/envoy-keyring.gpg] https://apt.envoyproxy.io bookworm main" > /etc/apt/sources.list.d/envoy.list \
+    && apt-get update && apt-get install -y envoy \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Xray
