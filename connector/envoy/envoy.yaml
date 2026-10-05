@@ -2,18 +2,6 @@ admin:
   address:
     socket_address: { address: 127.0.0.1, port_value: 9901 }
 
-overload_manager:
-  refresh_interval: 0.25s
-  resource_monitors:
-    - name: "envoy.resource_monitors.global_downstream_max_connections"
-      typed_config:
-        "@typeHeto ang malinis at buong `connector/envoy/envoy.yaml` para maitama ang nag-glitch na output kanina. Nagkaroon ng generation error kaya sumabit ang ilang linya sa itaas.
-
-```yaml
-admin:
-  address:
-    socket_address: { address: 127.0.0.1, port_value: 9901 }
-
 static_resources:
   listeners:
   - name: listener_0
@@ -23,7 +11,7 @@ static_resources:
     - filters:
       - name: envoy.filters.network.http_connection_manager
         typed_config:
-          "@type": [type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager](https://type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager)
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
           stat_prefix: ingress_http
           codec_type: AUTO
           stream_idle_timeout: 0s
@@ -48,7 +36,7 @@ static_resources:
           http_filters:
           - name: envoy.filters.http.router
             typed_config:
-              "@type": [type.googleapis.com/envoy.extensions.filters.http.router.v3.Router](https://type.googleapis.com/envoy.extensions.filters.http.router.v3.Router)
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
           upgrade_configs:
           - upgrade_type: websocket
 
@@ -67,7 +55,7 @@ static_resources:
                 port_value: 8082
     typed_extension_protocol_options:
       envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
-        "@type": [type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions](https://type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions)
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
         use_downstream_protocol_config:
           http2_protocol_options: {}
     circuit_breakers:
