@@ -11,7 +11,12 @@
         "action": "sniff"
       },
       {
-        "ip_cidr": ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "127.0.0.0/8"],
+        "ip_cidr": [
+          "10.0.0.0/8",
+          "172.16.0.0/12",
+          "192.168.0.0/16",
+          "127.0.0.0/8"
+        ],
         "outbound": "direct"
       },
       {
@@ -20,6 +25,9 @@
         "action": "reject"
       }
     ],
+    "default_domain_resolver": {
+      "server": "local"
+    },
     "final": "direct",
     "auto_detect_interface": true
   }
