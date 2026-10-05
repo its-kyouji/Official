@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+# ==============================================================================
+# CONFIGURATION
+# ==============================================================================
+
 import asyncio
 import socket
 import os
@@ -11,8 +16,15 @@ BACKEND_PORT = 8081  # Points to Envoy
 BUF_SIZE = 131072
 H2C_PREFACE = b"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
 
-# Injected safely via sed in entrypoint
-BASE_PREFIX = b"__BASE_PATH__-"
+# ==============================================================================
+# DYNAMIC PATH VALIDATION
+# ==============================================================================
+
+BASE_PREFIX = (os.environ.get("BASE_PATH", "/relay") + "-").encode()
+
+# ==============================================================================
+# FORTRESS POLICY
+# ==============================================================================
 
 try:
     with open("/run/cfg/relay/fortress.json", "r") as f:
@@ -24,6 +36,10 @@ ALLOWED_PATHS = [p.encode() for p in config.get("whitelist_paths", [])]
 IP_HITS = defaultdict(list)
 BANNED_IPS = {}
 
+# ==============================================================================
+# SOCKET OPTIMIZATION
+# ==============================================================================
+
 def optimize_socket(sock: socket.socket):
     if not sock: return
     try:
@@ -32,6 +48,10 @@ def optimize_socket(sock: socket.socket):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, BUF_SIZE)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
     except OSError: pass
+
+# ==============================================================================
+# IP BAN / RATE LIMIT
+# ==============================================================================
 
 def is_banned(ip):
     now = time.time()
@@ -48,6 +68,10 @@ def is_banned(ip):
         print(f"[FORTRESS] BANNED IP: {ip}", flush=True)
         return True
     return False
+
+# ==============================================================================
+# CLIENT HANDLER
+# ==============================================================================
 
 async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
     peer_ip = writer.get_extra_info('peername')[0]
@@ -74,12 +98,15 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
             if len(req_line) < 2: raise ValueError("Malformed request line")
             
             req_path = req_line[1].split(b"?")[0]
-            
-            # Allow logic
+
+            # ------------------------------------------------------------------
+            # PATH VALIDATION
+            # ------------------------------------------------------------------
+
             is_valid = False
             if req_path in ALLOWED_PATHS:
                 is_valid = True
-            elif BASE_PREFIX in req_path:
+            elif req_path.startswith(BASE_PREFIX):
                 is_valid = True
                 
             if not is_valid:
@@ -110,10 +137,18 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
     finally:
         writer.close()
 
+# ==============================================================================
+# SERVER
+# ==============================================================================
+
 async def main():
     server = await asyncio.start_server(handle_client, "0.0.0.0", LISTEN_PORT)
     print(f"[FORTRESS] Shield Active on port {LISTEN_PORT} -> forwarding to Envoy 8081", flush=True)
     async with server: await server.serve_forever()
+
+# ==============================================================================
+# ENTRYPOINT
+# ==============================================================================
 
 if __name__ == "__main__":
     import gc
