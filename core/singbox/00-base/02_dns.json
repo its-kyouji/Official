@@ -25,11 +25,6 @@
       {
         "outbound": "any",
         "server": "local"
-      },
-      {
-        "geosite": ["category-ads-all"],
-        "action": "reject",
-        "method": "default"
       }
     ]
   }
