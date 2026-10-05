@@ -9,8 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Build Dropbear 2024.85 (OpenSSH banner spoofing compatible)
 WORKDIR /build
-RUN wget https://matt.ucc.asn.au/dropbear/releases/dropbear-2024.85.tar.bz2 && \
-    tar -xjf dropbear-2024.85.tar.bz2
+RUN wget https://dropbear.nl/mirror/releases/dropbear-2024.85.tar.bz2 || wget --no-check-certificate https://matt.ucc.asn.au/dropbear/releases/dropbear-2024.85.tar.bz2
 WORKDIR /build/dropbear-2024.85
 RUN ./configure --disable-zlib --disable-syslog && make && make install
 
