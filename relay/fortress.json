@@ -1,0 +1,5 @@
+{
+  "ban_threshold": 150,
+  "ban_time_seconds": 600,
+  "whitelist_paths": ["/", "/health", "/runtime.json"]
+}
