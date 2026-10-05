@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# ==============================================================================
+# ENVIRONMENT & NETWORK INITIALIZATION
+# ==============================================================================
 export PATH_PREFIX="/relay"
 
 echo "[INIT] Fetching external IP..."
@@ -23,6 +26,9 @@ if [ -z "${SUFFIX:-}" ]; then
   export SUFFIX=$(cat /dev/urandom | tr -dc 'a-z0-9' | head -c 8)
 fi
 
+# ==============================================================================
+# ROUTING & SECRETS ALLOCATION
+# ==============================================================================
 export BASE_PATH="${PATH_PREFIX}/${SUFFIX}"
 export IN_PASS="${UUID}"
 export IN_SS="chacha20-ietf-poly1305"
@@ -34,7 +40,11 @@ export EXIT_PROTO="${PROTO:-vless}"
 export EXIT_SS="${SS:-chacha20-ietf-poly1305}"
 export EXIT_SEC="${SEC:-tls}"
 
+# ==============================================================================
+# CORE ENGINE CONFIGURATION (Xray & Sing-box)
+# ==============================================================================
 echo "[INIT] Flattening configurations to /etc and /run/cfg..."
+
 rm -rf /etc/xray/conf; mkdir -p /etc/xray/conf
 cp /app/core/xray/00-base/*.json /etc/xray/conf/ 2>/dev/null || true
 for d in /app/core/xray/*+*/; do
@@ -60,6 +70,9 @@ done
 cp -r /app/connector/. /run/cfg/connector/ 2>/dev/null || true
 cp -r /app/relay/. /run/cfg/relay/ 2>/dev/null || true
 
+# ==============================================================================
+# TEMPLATE SUBSTITUTION & SANITIZATION
+# ==============================================================================
 echo "[INIT] Processing JSON substitution & stripping..."
 python3 -c '
 import os, re, sys
@@ -96,12 +109,18 @@ for d in dirs_to_process:
             for k, v in tokens.items():
                 content = content.replace(k, v)
                 
-            if "__" in content:
-                print(f"[FATAL] Leftover token found in {p}")
+            # Fixed: Only target strict uppercase placeholder formats like __UUID__
+            leftovers = re.findall(r"__[A-Z_]+__", content)
+            if leftovers:
+                print(f"[FATAL] Leftover token(s) {leftovers} found in {p}")
                 sys.exit(1)
+                
             with open(p, "w") as file: file.write(content)
 '
 
+# ==============================================================================
+# RUNTIME METADATA & SSH PROVISIONING
+# ==============================================================================
 echo "[INIT] Writing runtime.json..."
 cat > /etc/xray/runtime.json <<EOF
 {
@@ -127,6 +146,9 @@ if [ ! -f /etc/dropbear/dropbear_rsa_host_key ]; then
 fi
 ssh-keygen -A >/dev/null 2>&1
 
+# ==============================================================================
+# PRE-FLIGHT CHECKS & DAEMON START
+# ==============================================================================
 echo "[INIT] Pre-flight config tests..."
 FAIL=0
 /usr/local/bin/xray run -test -confdir /etc/xray/conf || FAIL=1
