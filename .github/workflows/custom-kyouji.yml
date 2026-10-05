@@ -13,17 +13,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Validate JSONC syntax to prevent broken builds
-      - name: Validate JSONC Configs
+      # In-update na validation: Ii-scan lahat ng modular JSON configs
+      - name: Validate Modular JSONC Configs
         run: |
           python3 -c "
-          import json, re, os
-          for path in ['core/xray/config.json.template', 'core/singbox/config.json.template']:
-              if not os.path.exists(path): continue
+          import json, re, os, glob
+          
+          # Hanapin lahat ng .json sa loob ng core/ directory
+          files = glob.glob('core/**/*.json', recursive=True)
+          
+          for path in files:
               s = open(path).read()
+              # Tanggalin ang JSONC comments (// at /* */)
               s = re.sub(r'(\"(?:\\\\.|[^\"\\\\])*\")|//.*?$|/\*.*?\*/', lambda m: m.group(1) if m.group(1) else '', s, flags=re.MULTILINE|re.DOTALL)
-              json.loads(s)
-              print(f'✅ {path} syntax OK')
+              
+              try:
+                  json.loads(s)
+                  print(f'✅ {path} syntax OK')
+              except json.JSONDecodeError as e:
+                  print(f'❌ SYNTAX ERROR sa {path}: {e}')
+                  exit(1)
           "
 
       - name: Log in to DockerHub
