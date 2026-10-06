@@ -95,6 +95,7 @@ tokens = {
     "__UUID__": os.environ.get("UUID", ""),
     "__IN_PASS__": os.environ.get("IN_PASS", ""),
     "__IN_SS__": os.environ.get("IN_SS", ""),
+    "__BASE_PATH__": os.environ.get("BASE_PATH", ""),
     "__BASE_SVC__": os.environ.get("BASE_PATH", "").lstrip("/"),
     "__EXIT_IP__": os.environ.get("EXIT_IP", ""),
     "__EXIT_PASS__": os.environ.get("EXIT_PASS", ""),
