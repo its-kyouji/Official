@@ -39,6 +39,7 @@ static_resources:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
           upgrade_configs:
           - upgrade_type: websocket
+          - upgrade_type: http/1.1
 
   clusters:
   - name: haproxy_cluster
