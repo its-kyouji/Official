@@ -1,6 +1,6 @@
 {
   // ==== LOGGING ====
   "log": {
-    "loglevel": "warning"
+    "loglevel": "debug"
   }
 }
