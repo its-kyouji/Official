@@ -1,5 +1,6 @@
 {
     admin off
+
     servers {
         protocols h1 h2c
     }
@@ -7,31 +8,32 @@
 
 :8084 {
     # ==== XRAY XHTTP ====
-    
-    handle /__BASE_PATH__-x-vless-xh* {
+
+    handle /kyouji/kyouji-x-vless-xh* {
         reverse_proxy 127.0.0.1:10003 {
             flush_interval -1
         }
     }
-    
-    handle /__BASE_PATH__-x-vmess-xh* {
+
+    handle /kyouji/kyouji-x-vmess-xh* {
         reverse_proxy 127.0.0.1:10007 {
             flush_interval -1
         }
     }
-    
-    handle /__BASE_PATH__-x-trojan-xh* {
+
+    handle /kyouji/kyouji-x-trojan-xh* {
         reverse_proxy 127.0.0.1:10011 {
             flush_interval -1
         }
     }
-    
-    handle /__BASE_PATH__-x-ss-xh* {
+
+    handle /kyouji/kyouji-x-ss-xh* {
         reverse_proxy 127.0.0.1:10015 {
             flush_interval -1
         }
     }
-    
-    # Catch-all
+
+    # ==== DEFAULT DENY ====
+
     respond 404
 }
