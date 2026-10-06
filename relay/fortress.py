@@ -23,7 +23,7 @@ READ_TIMEOUT = 2.0
 BACKEND_TIMEOUT = 10.0
 
 H2C_PREFACE = b"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
-BASE_PREFIX = b"__BASE_PATH__-"
+BASE_PREFIX = b"/kyouji/kyouji-"
 
 
 # =================
@@ -44,8 +44,13 @@ except Exception:
         ]
     }
 
-BAN_THRESHOLD = int(config.get("ban_threshold", 150))
-BAN_TIME = int(config.get("ban_time_seconds", 600))
+BAN_THRESHOLD = int(
+    config.get("ban_threshold", 150)
+)
+
+BAN_TIME = int(
+    config.get("ban_time_seconds", 600)
+)
 
 ALLOWED_PATHS = {
     p.encode()
@@ -65,11 +70,19 @@ BANNED_IPS = {}
 
 def get_client_ip(lines, fallback):
     for line in lines:
-        if line.lower().startswith(b"x-forwarded-for:"):
-            value = line.split(b":", 1)[1].strip()
+        if line.lower().startswith(
+            b"x-forwarded-for:"
+        ):
+            value = line.split(
+                b":",
+                1
+            )[1].strip()
 
             if value:
-                return value.split(b",", 1)[0].strip().decode(
+                return value.split(
+                    b",",
+                    1
+                )[0].strip().decode(
                     "utf-8",
                     "ignore"
                 )
@@ -91,21 +104,25 @@ def optimize_socket(sock: socket.socket):
             socket.TCP_NODELAY,
             1
         )
+
         sock.setsockopt(
             socket.SOL_SOCKET,
             socket.SO_RCVBUF,
             BUF_SIZE
         )
+
         sock.setsockopt(
             socket.SOL_SOCKET,
             socket.SO_SNDBUF,
             BUF_SIZE
         )
+
         sock.setsockopt(
             socket.SOL_SOCKET,
             socket.SO_KEEPALIVE,
             1
         )
+
     except OSError:
         pass
 
@@ -163,7 +180,10 @@ async def relay_stream(src, dst):
             dst.write(data)
             await dst.drain()
 
-    except (ConnectionError, asyncio.CancelledError):
+    except (
+        ConnectionError,
+        asyncio.CancelledError
+    ):
         pass
 
     except Exception:
@@ -176,7 +196,12 @@ async def relay_stream(src, dst):
 
 async def handle_client(reader, writer):
     peer = writer.get_extra_info("peername")
-    fallback_ip = peer[0] if peer else "127.0.0.1"
+
+    fallback_ip = (
+        peer[0]
+        if peer
+        else "127.0.0.1"
+    )
 
     client_ip = fallback_ip
     backend_reader = None
@@ -210,18 +235,29 @@ async def handle_client(reader, writer):
                 )
 
                 if not more:
-                    raise ValueError("Incomplete header")
+                    raise ValueError(
+                        "Incomplete header"
+                    )
 
                 raw += more
 
                 if len(raw) > HEADER_LIMIT:
-                    raise ValueError("Header too large")
+                    raise ValueError(
+                        "Header too large"
+                    )
 
-            header_end = raw.find(b"\r\n\r\n")
-            lines = raw[:header_end].split(b"\r\n")
+            header_end = raw.find(
+                b"\r\n\r\n"
+            )
+
+            lines = raw[
+                :header_end
+            ].split(b"\r\n")
 
             if not lines:
-                raise ValueError("Malformed request")
+                raise ValueError(
+                    "Malformed request"
+                )
 
             # =================
             # CLIENT IP
@@ -240,16 +276,25 @@ async def handle_client(reader, writer):
             # PATH VALIDATION
             # =================
 
-            request_line = lines[0].split(b" ")
+            request_line = lines[0].split(
+                b" "
+            )
 
             if len(request_line) < 2:
-                raise ValueError("Malformed request line")
+                raise ValueError(
+                    "Malformed request line"
+                )
 
-            request_path = request_line[1].split(b"?", 1)[0]
+            request_path = request_line[1].split(
+                b"?",
+                1
+            )[0]
 
             valid_path = (
                 request_path in ALLOWED_PATHS
-                or request_path.startswith(BASE_PREFIX)
+                or request_path.startswith(
+                    BASE_PREFIX
+                )
             )
 
             if not valid_path:
@@ -267,6 +312,7 @@ async def handle_client(reader, writer):
                 )
 
                 await writer.drain()
+
                 writer.close()
                 return
 
@@ -274,12 +320,14 @@ async def handle_client(reader, writer):
         # BACKEND CONNECTION
         # =================
 
-        backend_reader, backend_writer = await asyncio.wait_for(
-            asyncio.open_connection(
-                BACKEND_HOST,
-                BACKEND_PORT
-            ),
-            timeout=BACKEND_TIMEOUT
+        backend_reader, backend_writer = (
+            await asyncio.wait_for(
+                asyncio.open_connection(
+                    BACKEND_HOST,
+                    BACKEND_PORT
+                ),
+                timeout=BACKEND_TIMEOUT
+            )
         )
 
         optimize_socket(
@@ -298,14 +346,21 @@ async def handle_client(reader, writer):
         # =================
 
         await asyncio.gather(
-            relay_stream(reader, backend_writer),
-            relay_stream(backend_reader, writer),
+            relay_stream(
+                reader,
+                backend_writer
+            ),
+            relay_stream(
+                backend_reader,
+                writer
+            ),
             return_exceptions=True
         )
 
     except asyncio.TimeoutError:
         print(
-            f"[FORTRESS] Timeout IP={client_ip}",
+            f"[FORTRESS] Timeout "
+            f"IP={client_ip}",
             flush=True
         )
 
@@ -339,7 +394,8 @@ async def main():
 
     print(
         f"[FORTRESS] Shield Active "
-        f"{LISTEN_PORT} -> {BACKEND_HOST}:{BACKEND_PORT}",
+        f"{LISTEN_PORT} -> "
+        f"{BACKEND_HOST}:{BACKEND_PORT}",
         flush=True
     )
 
