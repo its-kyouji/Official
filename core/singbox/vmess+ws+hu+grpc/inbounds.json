@@ -14,7 +14,7 @@
     {
       "type": "vmess", "tag": "s-vmess-grpc-in", "listen": "127.0.0.1", "listen_port": 11006,
       "users": [{"uuid": "__UUID__"}],
-      "transport": {"type": "grpc", "service_name": "__BASE_PATH__-s-vmess-grpc"}
+      "transport": {"type": "grpc", "service_name": "__BASE_SVC__-s-vmess-grpc"}
     }
   ]
 }
