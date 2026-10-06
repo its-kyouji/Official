@@ -1,12 +1,18 @@
 {
-  // ==== ROUTING (MODERN SYNTAX) ====
+  // ==== ROUTING (CLOUD RUN SAFE) ====
   "route": {
     "rules": [
       {
         "inbound": [
-          "s-vless-ws-in", "s-vless-hu-in", "s-vless-grpc-in",
-          "s-vmess-ws-in", "s-vmess-hu-in", "s-vmess-grpc-in",
-          "s-trojan-ws-in", "s-trojan-hu-in", "s-trojan-grpc-in"
+          "s-vless-ws-in",
+          "s-vless-hu-in",
+          "s-vless-grpc-in",
+          "s-vmess-ws-in",
+          "s-vmess-hu-in",
+          "s-vmess-grpc-in",
+          "s-trojan-ws-in",
+          "s-trojan-hu-in",
+          "s-trojan-grpc-in"
         ],
         "action": "sniff"
       },
@@ -29,6 +35,6 @@
       "server": "local"
     },
     "final": "direct",
-    "auto_detect_interface": true
+    "auto_detect_interface": false
   }
 }
