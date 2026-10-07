@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import asyncio
+import re
 import socket
 import os
 import json
@@ -8,9 +9,9 @@ import time
 from collections import defaultdict
 
 
-# =================
+# ===============
 # CONFIGURATION
-# =================
+# ===============
 
 LISTEN_PORT = int(os.environ.get("PORT", "8080"))
 BACKEND_HOST = "127.0.0.1"
@@ -25,6 +26,17 @@ BACKEND_TIMEOUT = 10.0
 H2C_PREFACE = b"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
 BASE_PREFIX = b"/kyouji/kyouji-"
 
+# =================
+# RAW PATH ROUTING
+# =================
+
+RAW_ROUTES = [
+    (re.compile(re.escape(BASE_PREFIX) + rb"ssh-dropbear-(ws|hu)$"), 2222),
+    (re.compile(re.escape(BASE_PREFIX) + rb"ssh-openssh-(ws|hu)$"), 2223),
+    (re.compile(re.escape(BASE_PREFIX) + rb"ovpn-(ws|hu)$"), 2224),
+    (re.compile(re.escape(BASE_PREFIX) + rb"[xs]-[a-z]+-hu$"), 8083),
+]
+
 
 # =================
 # FORTRESS POLICY
@@ -35,7 +47,7 @@ try:
         config = json.load(f)
 except Exception:
     config = {
-        "ban_threshold": 150,
+        "ban_threshold": 5000,
         "ban_time_seconds": 600,
         "whitelist_paths": [
             "/",
@@ -45,7 +57,7 @@ except Exception:
     }
 
 BAN_THRESHOLD = int(
-    config.get("ban_threshold", 150)
+    config.get("ban_threshold", 5000)
 )
 
 BAN_TIME = int(
@@ -64,9 +76,9 @@ IP_HITS = defaultdict(list)
 BANNED_IPS = {}
 
 
-# =================
+# =====================
 # CLIENT IP RESOLUTION
-# =================
+# =====================
 
 def get_client_ip(lines, fallback):
     for line in lines:
@@ -90,9 +102,9 @@ def get_client_ip(lines, fallback):
     return fallback
 
 
-# =================
+# ====================
 # SOCKET OPTIMIZATION
-# =================
+# ====================
 
 def optimize_socket(sock: socket.socket):
     if not sock:
@@ -165,9 +177,9 @@ def is_banned(ip):
     return False
 
 
-# =================
+# ====================
 # BIDIRECTIONAL RELAY
-# =================
+# ====================
 
 async def relay_stream(src, dst):
     try:
@@ -190,9 +202,9 @@ async def relay_stream(src, dst):
         pass
 
 
-# =================
+# ==========================
 # CLIENT CONNECTION HANDLER
-# =================
+# ==========================
 
 async def handle_client(reader, writer):
     peer = writer.get_extra_info("peername")
@@ -206,6 +218,7 @@ async def handle_client(reader, writer):
     client_ip = fallback_ip
     backend_reader = None
     backend_writer = None
+    target_port = BACKEND_PORT
 
     try:
         raw = await asyncio.wait_for(
@@ -259,9 +272,9 @@ async def handle_client(reader, writer):
                     "Malformed request"
                 )
 
-            # =================
+            # ============
             # CLIENT IP
-            # =================
+            # ============
 
             client_ip = get_client_ip(
                 lines[1:],
@@ -316,15 +329,24 @@ async def handle_client(reader, writer):
                 writer.close()
                 return
 
-        # =================
+            # =================
+            # RAW PATH ROUTING
+            # =================
+
+            for rx, port in RAW_ROUTES:
+                if rx.match(request_path):
+                    target_port = port
+                    break
+
+        # ===================
         # BACKEND CONNECTION
-        # =================
+        # ===================
 
         backend_reader, backend_writer = (
             await asyncio.wait_for(
                 asyncio.open_connection(
                     BACKEND_HOST,
-                    BACKEND_PORT
+                    target_port
                 ),
                 timeout=BACKEND_TIMEOUT
             )
@@ -341,9 +363,9 @@ async def handle_client(reader, writer):
         backend_writer.write(raw)
         await backend_writer.drain()
 
-        # =================
+        # ==================
         # FULL-DUPLEX RELAY
-        # =================
+        # ==================
 
         await asyncio.gather(
             relay_stream(
@@ -403,9 +425,9 @@ async def main():
         await server.serve_forever()
 
 
-# =================
+# =======================
 # APPLICATION ENTRYPOINT
-# =================
+# =======================
 
 if __name__ == "__main__":
     import gc
