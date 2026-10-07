@@ -174,14 +174,9 @@ cat > /etc/xray/runtime.json <<EOF
 }
 EOF
 
-echo "[INIT] Configuring SSH accounts..."
-
-# === DROPBEAR SHELL AUTHORIZATION ===
-if ! grep -q "/bin/false" /etc/shells; then
-  echo "/bin/false" >> /etc/shells
-fi
-
 # === BADVPN DNS RESOLVER FIX (VALIDATED) ===
+echo "[INIT] DNS resolver setup for BadVPN"
+
 if ! grep -q "8.8.8.8" /etc/resolv.conf; then
   echo "options rotate timeout:1" >> /etc/resolv.conf  
         # Google DNS
@@ -191,6 +186,8 @@ if ! grep -q "8.8.8.8" /etc/resolv.conf; then
 fi
 
 # === SSH ACCOUNT CREDENTIALS (Default) ===
+echo "[INIT] Configuring SSH accounts..."
+
 ACCOUNTS="${ACCOUNTS:-kyouji:kyouji}"
 
 echo "$ACCOUNTS" | tr ',' '\n' |
@@ -202,6 +199,11 @@ while IFS=: read -r u p; do
 
   echo "$u:$p" | chpasswd
 done
+
+# === SSH SHELL AUTHORIZATION ===
+if ! grep -q "/bin/false" /etc/shells; then
+  echo "/bin/false" >> /etc/shells
+fi
 
 # === SSH HOST KEY PROVISIONING ===
 if [ ! -f /etc/dropbear/dropbear_rsa_host_key ]; then
