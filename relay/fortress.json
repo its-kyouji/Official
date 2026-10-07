@@ -3,8 +3,8 @@
   // IP RATE LIMITING
   // =================
 
-  "ban_threshold": 150,
-  "ban_time_seconds": 600,
+  "ban_threshold": 5000,
+  "ban_time_seconds": 300,
 
   // =================
   // ALLOWED PATHS
