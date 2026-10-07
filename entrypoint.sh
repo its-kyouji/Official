@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-# =================
+# =====================================
 # ENVIRONMENT & NETWORK INITIALIZATION
-# =================
+# =====================================
 
 export PATH_PREFIX="/kyouji"
 export UUID="dba7e194-825f-4740-bb98-1689bc7b7ebc"
@@ -18,9 +18,9 @@ if [ -z "$SERVER_IP" ]; then
 fi
 set -e
 
-# =================
+# =============================
 # ROUTING & SECRETS ALLOCATION
-# =================
+# =============================
 
 export BASE_PATH="${PATH_PREFIX}/${SUFFIX}"
 export IN_PASS="kyouji"
@@ -33,9 +33,9 @@ export EXIT_PROTO="${PROTO:-vless}"
 export EXIT_SS="${SS:-chacha20-ietf-poly1305}"
 export EXIT_SEC="${SEC:-tls}"
 
-# =================
+# ==========================
 # CORE ENGINE CONFIGURATION
-# =================
+# ==========================
 
 echo "[INIT] Flattening configurations to /etc and /run/cfg..."
 
@@ -80,9 +80,9 @@ done
 cp -r /app/connector/. /run/cfg/connector/ 2>/dev/null || true
 cp -r /app/relay/. /run/cfg/relay/ 2>/dev/null || true
 
-# =================
-# TEMPLATE SUBSTITUTION & SANITIZATION
-# =================
+# ======================
+# TEMPLATE SUBSTITUTION
+# ======================
 
 echo "[INIT] Processing JSON substitution & stripping..."
 
@@ -160,9 +160,8 @@ for d in dirs_to_process:
 '
 
 # =================
-# RUNTIME METADATA & SSH PROVISIONING
+# RUNTIME METADATA
 # =================
-
 echo "[INIT] Writing runtime.json..."
 
 cat > /etc/xray/runtime.json <<EOF
@@ -177,6 +176,21 @@ EOF
 
 echo "[INIT] Configuring SSH accounts..."
 
+# === DROPBEAR SHELL AUTHORIZATION ===
+if ! grep -q "/bin/false" /etc/shells; then
+  echo "/bin/false" >> /etc/shells
+fi
+
+# === BADVPN DNS RESOLVER FIX (VALIDATED) ===
+if ! grep -q "8.8.8.8" /etc/resolv.conf; then
+  echo "options rotate timeout:1" >> /etc/resolv.conf  
+        # Google DNS
+  echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+        # Cloudflare DNS
+  echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+fi
+
+# === SSH ACCOUNT CREDENTIALS (Default) ===
 ACCOUNTS="${ACCOUNTS:-kyouji:kyouji}"
 
 echo "$ACCOUNTS" | tr ',' '\n' |
@@ -189,6 +203,7 @@ while IFS=: read -r u p; do
   echo "$u:$p" | chpasswd
 done
 
+# === SSH HOST KEY PROVISIONING ===
 if [ ! -f /etc/dropbear/dropbear_rsa_host_key ]; then
   mkdir -p /etc/dropbear
 
@@ -200,37 +215,44 @@ fi
 
 ssh-keygen -A >/dev/null 2>&1
 
-# =================
-# PRE-FLIGHT CHECKS & DAEMON START
-# =================
+# ==================
+# PRE-FLIGHT CHECKS
+# ==================
 
 echo "[INIT] Pre-flight config tests..."
 
 FAIL=0
 
+# Xray
 /usr/local/bin/xray run \
   -test \
   -confdir /etc/xray/conf || FAIL=1
-
+  
+# Sing-box
 /usr/local/bin/sing-box check \
   -C /etc/singbox/conf || FAIL=1
 
+# HAProxy
 /usr/sbin/haproxy \
   -c \
   -f /run/cfg/connector/haproxy/haproxy.cfg || FAIL=1
 
+# Envoy
 envoy \
   --mode validate \
   -c /run/cfg/connector/envoy/envoy.yaml || FAIL=1
 
+# Nginx
 nginx \
   -t \
   -c /run/cfg/connector/nginx/nginx.conf || FAIL=1
 
+# Caddy
 caddy validate \
   --config /run/cfg/connector/caddy/Caddyfile \
   --adapter caddyfile || FAIL=1
 
+# Python relay
 python3 \
   -m py_compile \
   /run/cfg/relay/*.py || FAIL=1
