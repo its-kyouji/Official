@@ -1,4 +1,5 @@
 # Port Mapping (Strictly Unique)
+# Example and this is experimental not official yet.
 - 8080: Cloud Run Target (Fortress Shield)
 - 8081: Envoy Proxy (h2c/gRPC handler)
 - 8082: HAProxy (L7 Router)
